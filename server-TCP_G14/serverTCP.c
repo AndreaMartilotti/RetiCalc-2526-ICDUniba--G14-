@@ -4,8 +4,6 @@
  *  Created on: 15 dic 2025
  *      Author: Andrea Martilotti
  *      Author: Michele Ritella
- *      prova
- *      prova 9
  */
 
 #include <stdio.h>
@@ -14,10 +12,35 @@
 #define MAX_LEN 50
 
 
-typedef struct MSG{
+typedef struct _MSG{
 	int value;
 	char msg[MAX_LEN];
-};
+}messa;
+
+
+
+
+void cancellaVocali(char* str, int MAX_LENG){
+	int index=0;
+	//controllo vocale
+	while(index<MAX_LENG){
+    	char stringa=tolower(str[index]);
+    	if(stringa=='a'||stringa=='e'||stringa=='i'||stringa=='o'||stringa=='u'){
+    		//elimina carattere
+    		for(int i=index;i<MAX_LENG;i++){
+    			str[i]=str[i+1];
+    		}
+    		printf("\n\npost eliminazione: %s", str);
+            //printf("\n\n%d passo: %s",index,stringa);
+    	}
+    	else{
+    	    index++;
+    	    printf("\npassato\n");
+    	}
+	}
+}
+
+
 
 int main (){
 	WSADATA wsaData;
@@ -43,7 +66,7 @@ int main (){
 	//IMPOSTAZIONI SOCKADDR_IN
 	server.sin_family = AF_INET;
 	server.sin_addr.s_addr = inet_addr("127.0.0.1"); //settaggio ip fisso in fase succcessiva
-	server.sin_port = htons(0); //messa in assegnazione automatica, eventuale settaggio in fase successiva
+	server.sin_port = htons(27015); //messa in assegnazione automatica, eventuale settaggio in fase successiva
 
 	//BINDING DEI SETTINGS ALLA SOCKET ServerSocket
 	if(bind(ServerSocket, (struct sockaddr*)&server, sizeof(server))<0){
@@ -80,13 +103,29 @@ int main (){
 			closesocket(ServerSocket);
 			return -1;
 		}
+		printf("Connessione accettata da IP: %s, Porta: %d\n", inet_ntoa(clientAdd.sin_addr), ntohs(clientAdd.sin_port));
 
-		MSG messaggio;
+		messa messaggio;
 
-		if(recv(clientSocket, (char *)&messaggio, sizeof(messaggio.message), 0)<0){
-			perror("\n\nMSG error\n\n");
+		if(recv(clientSocket, (char *)&messaggio, sizeof(messaggio.msg), 0)<0){
+			perror("\n\nMSG recive error\n\n");
 			return -1;
 		}
+		else{
+			// rimuovi vocali
+			printf("\n\nMessaggio ricevuto da client %s : %s", inet_ntoa(clientAdd.sin_addr), messaggio.msg);
+			int strleng=strlen(messaggio.msg);
+			cancellaVocali(messaggio.msg, strleng);
+
+			//sendtoclient
+			if(send(clientSocket, (char *)&messaggio, sizeof(messaggio.msg), 0)<0){
+				perror("\n\nMSG send error\n\n");
+				return -1;
+			}
+			printf("\n\nMessaggio inviato\n\n");
+
+		}
+
 	}
 
 
